@@ -1,13 +1,25 @@
 import json
-from fastapi import APIRouter
+from fastapi import APIRouter, status, HTTPException
 from app.database import r
 
 router = APIRouter(prefix="/stats", tags=["Plastic Statistics"])
 
 
-@router.get("/plastic")
+@router.get("/plastic", status_code=status.HTTP_200_OK)
 async def get_plastic():
     data = r.get("plastic_data")
     if data:
         return json.loads(data)
-    return {"error": "данные еще не загружены"}
+    raise HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND,
+        detail={"error": "data has not been loaded yet"})
+
+
+@router.get("/cards")
+async def get_cards():
+    data = r.get("plastic_cards")
+    if data:
+        return json.loads(data)
+    raise HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND,
+        detail={"error": "data has not been loaded yet"})
