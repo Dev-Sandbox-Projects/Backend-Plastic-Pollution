@@ -60,7 +60,7 @@ def fetch_and_store():
 
         cards = {
             "year_production": last_year or 2019,
-            "tons_produced_annually_mton": prod_val or 460,
+            "tons_produced_annually_mton": prod_val or 530,
             "year_ocean_leakage": ocean_year or 2019,
             "tons_enter_oceans_mton": ocean_mton or 22,
             "marine_animals_affected_millions": 100,

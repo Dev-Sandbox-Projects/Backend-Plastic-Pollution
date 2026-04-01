@@ -6,6 +6,8 @@ import logging
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
 from app.database import r
+from fastapi.middleware.cors import CORSMiddleware
+
 
 G = "\033[92m"  # зеленый
 B = "\033[94m"  # Синий
@@ -22,11 +24,11 @@ logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    try:
-        r.flushdb()
-        logger.info(f"Redis database {G}successfully flushed{END}")
-    except Exception as e:
-        logging.error(f"Redis flush failed: {e}")
+    # try:
+    #     r.flushdb()
+    #     logger.info(f"Redis database {G}successfully flushed{END}")
+    # except Exception as e:
+    #     logging.error(f"Redis flush failed: {e}")
     scheduler = BackgroundScheduler()
     trigger_daily = CronTrigger(hour=0, minute=0)
     scheduler.add_job(
@@ -50,4 +52,17 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
+
+origins = [
+    "https://dev-sandbox-projects.github.io/Plastic-Pollution-Report-2026/"
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,  # Разрешаем доступ нашему фронтенду
+    allow_credentials=True,
+    allow_methods=["*"],    # Разрешаем все методы (GET, POST и т.д.)
+    allow_headers=["*"],    # Разрешаем все заголовки
+)
+
 app.include_router(router)
