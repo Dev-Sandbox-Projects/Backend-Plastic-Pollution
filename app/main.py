@@ -7,6 +7,9 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
 from app.database import r
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.concurrency import run_in_threadpool
+import asyncio
+
 
 
 G = "\033[92m"  # зеленый
@@ -24,31 +27,23 @@ logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # try:
-    #     r.flushdb()
-    #     logger.info(f"Redis database {G}successfully flushed{END}")
-    # except Exception as e:
-    #     logging.error(f"Redis flush failed: {e}")
     scheduler = BackgroundScheduler()
-    trigger_daily = CronTrigger(hour=0, minute=0)
-    scheduler.add_job(
-        fetch_and_store,
-        trigger=trigger_daily,
-        id="oecd_parser_job",
-        replace_existing=True
-    )
+    scheduler.add_job(fetch_and_store, CronTrigger(hour=0, minute=0), id="oecd_job")
     scheduler.start()
+    async def run_initial_logic():
+        try:
+            logger.info("Starting heavy initial fetch...")
+            # Если fetch_and_store синхронная — обязательно в threadpool
+            await run_in_threadpool(fetch_and_store)
+            logger.info("Initial fetch completed.")
+        except Exception as e:
+            logger.error(f"Initial fetch failed: {e}")
+    background_task = asyncio.create_task(run_initial_logic())
 
-    logger.info(f"Scheduler {G}launched{END}: OECD parsing once a day.")
-    try:
-        fetch_and_store()
-        logger.info(f"Initial data {G}successfully parsed{END}")
-    except Exception as e:
-        logging.error(f"Initial fetch failed: {e}")
+    yield  # FastAPI теперь принимает запросы
 
-    yield
     scheduler.shutdown()
-    logger.info(f"Scheduler {Y}stopped{END}.")
+    logger.info("Lifespan shutdown complete.")
 
 
 app = FastAPI(lifespan=lifespan)
