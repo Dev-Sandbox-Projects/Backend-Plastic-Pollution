@@ -1,24 +1,11 @@
-import os
-import json
-import redis
-import requests
 import pandas as pd
-import xml.etree.ElementTree as ET
+import requests
+import json
 from io import StringIO
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from config import settings
-
-r = redis.from_url(settings.REDIS_URL, decode_responses=True)
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    try:
-        fetch_and_store()
-        print("Data successful parsed")
-    except Exception as e:
-        print(f"Failed: {e}")
-    yield
+from app.database import r
 
 def fetch_and_store():
     URL = settings.URL_TOTAL
@@ -45,13 +32,4 @@ def fetch_and_store():
         global_data = df.groupby('TIME_PERIOD')['OBS_VALUE'].sum().reset_index().to_dict(orient='records')
         
         r.set("plastic_data", json.dumps(global_data))
-        print("Данные обновлены в Redis (распарсен XML)!")
-
-app = FastAPI(lifespan=lifespan)
-
-@app.get("/plastic")
-def get_plastic():
-    data = r.get("plastic_data")
-    if data:
-        return json.loads(data)
-    return {"error": "данные еще не загружены"}
+        print("Данные обновлены в Redis!")
