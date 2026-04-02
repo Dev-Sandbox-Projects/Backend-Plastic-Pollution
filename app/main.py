@@ -40,9 +40,7 @@ async def lifespan(app: FastAPI):
         except Exception as e:
             logger.error(f"Failed to schedule initial fetch: {e}")
     background_task = asyncio.create_task(run_initial_logic())
-
-    yield  # FastAPI теперь принимает запросы
-
+    yield
     scheduler.shutdown()
     logger.info("Lifespan shutdown complete.")
 
@@ -52,13 +50,11 @@ app = FastAPI(lifespan=lifespan)
 origins = [
     "https://dev-sandbox-projects.github.io/Plastic-Pollution-Report-2026/"
 ]
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,  # Разрешаем доступ нашему фронтенду
+    allow_origins=origins,
     allow_credentials=True,
-    allow_methods=["*"],    # Разрешаем все методы (GET, POST и т.д.)
-    allow_headers=["*"],    # Разрешаем все заголовки
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
-
 app.include_router(router)
