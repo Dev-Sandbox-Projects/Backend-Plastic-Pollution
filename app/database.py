@@ -1,4 +1,8 @@
 import redis
 from config import settings
 
-r = redis.from_url(settings.REDIS_URL, decode_responses=True)
+r = redis.from_url(
+    settings.REDIS_URL,
+    decode_responses=True,
+    ssl_cert_reqs=None
+)

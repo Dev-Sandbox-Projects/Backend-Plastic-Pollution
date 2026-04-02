@@ -30,14 +30,15 @@ async def lifespan(app: FastAPI):
     scheduler = BackgroundScheduler()
     scheduler.add_job(fetch_and_store, CronTrigger(hour=0, minute=0), id="oecd_job")
     scheduler.start()
+
     async def run_initial_logic():
         try:
-            logger.info("Starting heavy initial fetch...")
-            # Если fetch_and_store синхронная — обязательно в threadpool
-            await run_in_threadpool(fetch_and_store)
-            logger.info("Initial fetch completed.")
+            logger.info("Starting heavy initial fetch in background...")
+            loop = asyncio.get_event_loop()
+            loop.run_in_executor(None, fetch_and_store)
+            logger.info("Background fetch task scheduled.")
         except Exception as e:
-            logger.error(f"Initial fetch failed: {e}")
+            logger.error(f"Failed to schedule initial fetch: {e}")
     background_task = asyncio.create_task(run_initial_logic())
 
     yield  # FastAPI теперь принимает запросы

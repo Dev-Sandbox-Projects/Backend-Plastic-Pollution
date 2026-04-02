@@ -10,9 +10,7 @@ async def get_plastic():
     data = r.get("plastic_data")
     if data:
         return json.loads(data)
-    raise HTTPException(
-        status_code=status.HTTP_404_NOT_FOUND,
-        detail={"error": "data has not been loaded yet"})
+    return {"debug": "Redis is empty, checking connection...", "ping": r.ping()}
 
 
 @router.get("/cards")
