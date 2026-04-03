@@ -12,7 +12,7 @@ R = "\033[91m"  # Красный
 END = "\033[0m" # Сброс
 
 def _read_oecd_csv(url: str) -> pd.DataFrame | None:
-    print(f">>> [DEBUG] Запрос к OECD: {url[:60]}...", flush=True)
+    print(f">>> [DEBUG] Запрос к OECD: {url}", flush=True) 
     try:
         r_req = requests.get(url, timeout=60, headers={'User-Agent': 'Mozilla/5.0'})
         print(f">>> [DEBUG] Ответ получен. Status: {r_req.status_code}", flush=True)
