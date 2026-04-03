@@ -53,7 +53,8 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 
 origins = [
-    "https://dev-sandbox-projects.github.io/Plastic-Pollution-Report-2026/"
+    "https://dev-sandbox-projects.github.io",
+    "https://vargkernel.github.io"
 ]
 app.add_middleware(
     CORSMiddleware,
