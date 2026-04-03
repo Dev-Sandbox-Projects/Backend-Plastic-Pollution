@@ -1,10 +1,11 @@
-import redis
-from config import settings
+class MemoryStore:
+    def __init__(self):
+        self._data = {}
 
-redis_options = {
-    "decode_responses": True,
-}
+    def set(self, key: str, value: any):
+        self._data[key] = value
 
-if settings.REDIS_URL.startswith("rediss://"):
-    redis_options["ssl_cert_reqs"] = "none"
-r = redis.from_url(settings.REDIS_URL, **redis_options)
+    def get(self, key: str):
+        return self._data.get(key)
+
+db = MemoryStore()
