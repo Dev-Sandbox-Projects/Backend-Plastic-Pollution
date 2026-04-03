@@ -1,11 +1,10 @@
-import json
 from io import StringIO
 
 import pandas as pd
 import requests
 
 from config import settings
-from app.database import r
+from app.database import db
 
 
 def _read_oecd_csv(url: str) -> pd.DataFrame | None:
@@ -88,11 +87,11 @@ def fetch_and_store():
 			"ocean_plastic_particles_trillions": 171,
 		}
 
-		print(">>> [DEBUG] Попытка записи в Redis...", flush=True)
-		r.set("plastic_data", json.dumps(global_data))
-		r.set("plastic_cards", json.dumps(cards))
+		print(">>> [DEBUG] Попытка записи в ОЗУ...", flush=True)
+		db.set("plastic_data", global_data)
+		db.set("plastic_cards", cards)
 
-		print(f"OK Redis: график до {last_year} г., последнее значение {prod_val} Mt.", flush=True)
+		print(f"OK Memory: график до {last_year} г., последнее значение {prod_val} Mt.", flush=True)
 
 	except Exception as e:
 		print(f"Failed: {e}", flush=True)
