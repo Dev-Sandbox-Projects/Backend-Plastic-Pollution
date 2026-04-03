@@ -28,5 +28,4 @@ https://dev-sandbox-projects.github.io/Plastic-Pollution-Report-2026/
 
 - Python
 - FastAPI
-- Redis
 - Docker
