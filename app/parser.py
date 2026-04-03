@@ -1,28 +1,51 @@
 import pandas as pd
 import requests
+import time
 from io import StringIO
 
 from config import settings
 from app.database import db
 
-# Цвета для логов (согласовано с main.py)
+# Цвета для логов
 G = "\033[92m"  # Зеленый
 B = "\033[94m"  # Синий
 R = "\033[91m"  # Красный
+Y = "\033[93m"  # Желтый
 END = "\033[0m" # Сброс
 
 def _read_oecd_csv(url: str) -> pd.DataFrame | None:
+    # Выводим полную ссылку без сокращений
     print(f">>> [DEBUG] Запрос к OECD: {url}", flush=True) 
     try:
-        r_req = requests.get(url, timeout=60, headers={'User-Agent': 'Mozilla/5.0'})
+        # ДОБАВЛЕН ИСКЛЮЧИТЕЛЬНО ACCEPT И USER-AGENT
+        headers = {
+            'User-Agent': 'Mozilla/5.0',
+            'Accept': 'text/csv'
+        }
+        
+        r_req = requests.get(url, timeout=60, headers=headers)
         print(f">>> [DEBUG] Ответ получен. Status: {r_req.status_code}", flush=True)
 
         if r_req.status_code != 200:
-            print(f"{R}OECD ERROR: {url[:80]}… → HTTP {r_req.status_code}{END}", flush=True)
+            print(f"{R}OECD ERROR: HTTP {r_req.status_code} для URL: {url}{END}", flush=True)
+            return None
+
+        # Проверка на XML, чтобы не гадать по логам
+        if r_req.text.strip().startswith("<?xml") or "<mes:Structure" in r_req.text:
+            print(f"{R}>>> [CRITICAL] OECD проигнорировал Accept и прислал XML!{END}", flush=True)
             return None
 
         print(f">>> [DEBUG] Чтение CSV через Pandas...", flush=True)
-        df = pd.read_csv(StringIO(r_req.text), sep=None, engine="python")
+        
+        # ЗАМЕР ВРЕМЕНИ
+        start_time = time.time()
+        
+        # Оптимизируем чтение: sep="," быстрее, чем None
+        df = pd.read_csv(StringIO(r_req.text), sep=",")
+        
+        end_time = time.time()
+        print(f"{Y}>>> [TIMER] Pandas обработал файл за {end_time - start_time:.2f} сек.{END}", flush=True)
+
         df.columns = [c.upper() for c in df.columns]
 
         if "OBS_VALUE" not in df.columns or "TIME_PERIOD" not in df.columns:
@@ -40,8 +63,8 @@ def _read_oecd_csv(url: str) -> pd.DataFrame | None:
         print(f"{R}>>> [DEBUG] Ошибка внутри _read_oecd_csv: {e}{END}", flush=True)
         return None
 
-
 def fetch_and_store():
+    # ... (остальная часть функции остается без изменений)
     try:
         print(f"\n{G}>>> [DEBUG] Старт fetch_and_store{END}", flush=True)
 
@@ -88,13 +111,10 @@ def fetch_and_store():
             "ocean_plastic_particles_trillions": 171,
         }
 
-        print(">>> [DEBUG] Запись данных в локальное хранилище (ОЗУ)...", flush=True)
         db.set("plastic_data", global_data)
         db.set("plastic_cards", cards)
 
-        # ВИЗУАЛИЗАЦИЯ ДАННЫХ В ЛОГАХ
         print(f"\n{B}=== SNAPSHOT OF LOCAL DB ==={END}")
-        # Выводим cards полностью, а данные графика сокращенно (первые 3 и последние 3), чтобы не спамить
         print(f"CARDS: {cards}")
         print(f"GRAPH POINTS COUNT: {len(global_data)}")
         if len(global_data) > 6:
