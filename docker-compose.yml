@@ -1,19 +1,9 @@
 services:
-  redis:
-    image: redis:7-alpine
-    container_name: "redis_plastic"
+  api:
+    build: .
+    container_name: "plastic_api"
     restart: always
     ports:
-      - "6379:6379"
-    volumes:
-      - redis_data:/data
-    command: redis-server --save 60 1 --loglevel warning
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 5s
-      timeout: 3s
-      retries: 5
-
-
-volumes:
-  redis_data:
+      - "8080:8080"
+    environment:
+      - PORT=8080
