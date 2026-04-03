@@ -5,12 +5,9 @@ from app.route import router
 import logging
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
-from app.database import r
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.concurrency import run_in_threadpool
 import asyncio
-
-
 
 G = "\033[92m"  # зеленый
 B = "\033[94m"  # Синий
