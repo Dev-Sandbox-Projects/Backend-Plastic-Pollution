@@ -46,7 +46,9 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 
 origins = [
-    "https://dev-sandbox-projects.github.io"
+    "https://dev-sandbox-projects.github.io",
+    "https://vargkernel.github.io",
+
 ]
 app.add_middleware(
     CORSMiddleware,
