@@ -3,6 +3,9 @@ import urllib.request
 from datetime import datetime
 import pytz
 
+from config import settings
+
+
 def get_now_str():
     tz = pytz.timezone('Europe/Moscow')
     now = datetime.now(tz)
@@ -23,3 +26,10 @@ def send_telegram_msg(token, chat_id, text):
 		return None
 
 
+def notify_all(message: str):
+    print(message, flush=True)
+    for chat in settings.CHAT_IDS:
+        try:
+            send_telegram_msg(settings.TOKEN, chat, message)
+        except:
+            pass
