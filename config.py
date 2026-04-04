@@ -15,7 +15,6 @@ class Settings(BaseSettings):
     )
     CHAT_IDS: list[int]
     TOKEN: str
-    REDIS_URL: str
     model_config = SettingsConfigDict(
         env_file=os.path.join(os.path.dirname(__file__), ".env")
     )
