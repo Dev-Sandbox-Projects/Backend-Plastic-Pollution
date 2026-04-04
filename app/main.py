@@ -47,7 +47,6 @@ app = FastAPI(lifespan=lifespan)
 
 origins = [
     "https://dev-sandbox-projects.github.io",
-    "https://vargkernel.github.io",
 
 ]
 app.add_middleware(
