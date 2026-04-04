@@ -16,7 +16,8 @@ class Settings(BaseSettings):
     )
     # Опционально: отдельный CSV-ряд для утечки в океан (тот же формат с TIME_PERIOD, OBS_VALUE).
     URL_CARD_OCEAN: str | None = Field(default=None)
-
+    CHAT_IDS: list[int]
+    TOKEN: str
     REDIS_URL: str
     model_config = SettingsConfigDict(
         env_file=os.path.join(os.path.dirname(__file__), ".env")

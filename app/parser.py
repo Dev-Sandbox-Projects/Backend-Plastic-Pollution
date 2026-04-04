@@ -4,6 +4,7 @@ from io import StringIO
 import pandas as pd
 import requests
 
+from app.utils import send_telegram_msg
 from config import settings
 from app.database import r
 
@@ -91,8 +92,14 @@ def fetch_and_store():
 		print(">>> [DEBUG] Попытка записи в Redis...", flush=True)
 		r.set("plastic_data", json.dumps(global_data))
 		r.set("plastic_cards", json.dumps(cards))
+		message = f"OK Redis: график до {last_year} г., последнее значение {prod_val} Mt."
+		print(message, flush=True)
+		try:
+			for chat in settings.CHAT_IDS:
+				send_telegram_msg(settings.TOKEN, chat, message)
+		except Exception as tg_err:
+			print(f"⚠️ Не удалось отправить лог в Telegram: {tg_err}", flush=True)
 
-		print(f"OK Redis: график до {last_year} г., последнее значение {prod_val} Mt.", flush=True)
 
 	except Exception as e:
 		print(f"Failed: {e}", flush=True)
