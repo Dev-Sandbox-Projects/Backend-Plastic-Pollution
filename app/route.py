@@ -4,7 +4,7 @@ from app import parser
 router = APIRouter(tags=["Plastic Statistics"])
 
 
-@router.get("/", status_code=status.HTTP_200_OK)
+@router.api_route("/", methods=["GET", "HEAD"], status_code=status.HTTP_200_OK)
 async def successful_response():
 	return {"message": "Server running successful"}
 
