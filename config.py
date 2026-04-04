@@ -4,7 +4,6 @@ import os
 
 
 class Settings(BaseSettings):
-    # OECD SDMX 3: Global Plastics Outlook — «Plastics Use by Application», World, total (Mt).
     URL_TOTAL: str = Field(
         default=(
             "https://sdmx.oecd.org/public/rest/data/"
@@ -14,8 +13,6 @@ class Settings(BaseSettings):
         ),
         description="Ряд для графика: TIME_PERIOD + OBS_VALUE (млн тонн).",
     )
-    # Опционально: отдельный CSV-ряд для утечки в океан (тот же формат с TIME_PERIOD, OBS_VALUE).
-    URL_CARD_OCEAN: str | None = Field(default=None)
     CHAT_IDS: list[int]
     TOKEN: str
     REDIS_URL: str
