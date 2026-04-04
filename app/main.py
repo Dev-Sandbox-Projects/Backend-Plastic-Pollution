@@ -1,16 +1,13 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
-from app.parser import fetch_and_store
+from app.parser import update_global_plastic_data
 from app.route import router
 import logging
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
-from app.database import r
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.concurrency import run_in_threadpool
 import asyncio
-
-
+from app.telegram import notify_all
 
 G = "\033[92m"  # зеленый
 B = "\033[94m"  # Синий
@@ -28,18 +25,19 @@ logger = logging.getLogger(__name__)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     scheduler = BackgroundScheduler()
-    scheduler.add_job(fetch_and_store, CronTrigger(hour=0, minute=0), id="oecd_job")
+    scheduler.add_job(update_global_plastic_data, CronTrigger(hour=0, minute=0), id="oecd_job")
     scheduler.start()
-
     async def run_initial_logic():
         try:
-            logger.info("Starting heavy initial fetch in background...")
-            loop = asyncio.get_event_loop()
-            loop.run_in_executor(None, fetch_and_store)
-            logger.info("Background fetch task scheduled.")
+            logger.info("Run parser at server startup")
+            loop = asyncio.get_running_loop()
+            notify_all("Server running successful")
+            await loop.run_in_executor(None, update_global_plastic_data)
+            logger.info("Primary data has been successfully loaded into memory")
         except Exception as e:
-            logger.error(f"Failed to schedule initial fetch: {e}")
-    background_task = asyncio.create_task(run_initial_logic())
+            logger.error(f"Error at start: {e}")
+            notify_all("Error starting server")
+    asyncio.create_task(run_initial_logic())
     yield
     scheduler.shutdown()
     logger.info("Lifespan shutdown complete.")
