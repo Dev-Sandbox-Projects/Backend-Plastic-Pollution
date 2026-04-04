@@ -2,7 +2,6 @@ import urllib.parse
 import urllib.request
 from datetime import datetime
 import pytz
-
 from config import settings
 
 
